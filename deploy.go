@@ -28,6 +28,11 @@ func main() {
 
 	flag.Parse()
 
+	if *ip == "" {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
 	// We use session just for executing commands passed throuh terminal
 	// We use client for for executing batch commands
 	client, session, err := connectToServer(ip, *certificate, *userp)
