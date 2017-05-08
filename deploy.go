@@ -87,23 +87,27 @@ func uploadFiles(client *ssh.Client, path string) (resp string, error error) {
 	color.Set(color.FgYellow)
 	scanner := bufio.NewScanner(file)
 	c := make(chan string)
+	// For avoiding deadlocks waiting response in channels
+	processingFiles := 0
 	for scanner.Scan() {
+		processingFiles++
 		log.Println("Uploading " + filepath.Base(scanner.Text()))
-		go func(scanner *bufio.Scanner) {
-			srcFile, err := os.Open(scanner.Text())
+
+		go func(path string) {
+			srcFile, err := os.Open(path)
 			if err != nil {
-				c <- "nok"
+				c <- "Error: " + err.Error()
 			}
 
 			defer srcFile.Close()
 
-			dstFile, err := sftp.Create(filepath.Base(scanner.Text()))
+			dstFile, err := sftp.Create(filepath.Base(path))
 			if err != nil {
-				c <- "nok"
+				c <- "Error: " + err.Error()
 			}
 			defer dstFile.Close()
 
-			buf := make([]byte, 1024)
+			buf := make([]byte, 32*1024)
 			for {
 				n, _ := srcFile.Read(buf)
 				if n == 0 {
@@ -112,16 +116,18 @@ func uploadFiles(client *ssh.Client, path string) (resp string, error error) {
 				dstFile.Write(buf)
 			}
 
-			c <- filepath.Base(scanner.Text()) + " Uploaded!!!"
-		}(scanner)
+			c <- filepath.Base(path) + " Uploaded!!!"
+
+		}(scanner.Text())
 	}
 
 	for i := range c {
 		log.Println(i)
+		processingFiles--
+		if processingFiles == 0 {
+			break
+		}
 	}
-	// if err := scanner.Err(); err != nil {
-	// 	return "nok", err
-	// }
 
 	color.Unset()
 	return "ok", nil
