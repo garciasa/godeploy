@@ -1,0 +1,4 @@
+sudo mv *.js /var/www/beaches/wp-content/themes/beaches/js
+sudo chown root:www-data /var/www/beaches/wp-content/themes/beaches/js/*.js
+sudo mv *.css /var/www/beaches/wp-content/themes/beaches/css
+sudo chown root:www-data /var/www/beaches/wp-content/themes/beaches/css/*.css

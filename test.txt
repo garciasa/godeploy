@@ -1,0 +1,2 @@
+C:\Proyects\Testing\go\book\deploy\file1.txt
+C:\Proyects\Testing\go\book\deploy\file2.txt
