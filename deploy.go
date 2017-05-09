@@ -95,6 +95,10 @@ func uploadFiles(client *ssh.Client, path string) (resp string, error error) {
 	// For avoiding deadlocks waiting response in channels
 	processingFiles := 0
 	for scanner.Scan() {
+		// Checking if we want to exclude that file
+		if scanner.Text()[:2] == "//" {
+			continue
+		}
 		processingFiles++
 		log.Println("Uploading " + filepath.Base(scanner.Text()))
 
@@ -149,6 +153,10 @@ func executeBatch(client *ssh.Client, path string) (resp string, error error) {
 	var stdoutBuf bytes.Buffer
 	color.Set(color.FgYellow)
 	for scanner.Scan() {
+		// Checking if we want to exclude that command
+		if scanner.Text()[:2] == "//" {
+			continue
+		}
 		session, err := client.NewSession()
 		if err != nil {
 			log.Fatal(err)
