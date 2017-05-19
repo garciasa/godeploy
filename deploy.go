@@ -103,12 +103,10 @@ func uploadFiles(client *ssh.Client, path string) (resp string, error error) {
 		log.Println("Uploading " + filepath.Base(scanner.Text()))
 
 		go func(path string) {
-			srcFile, err := os.Open(path)
+			srcFile, err := ioutil.ReadFile(path)
 			if err != nil {
 				c <- "Error: " + err.Error()
 			}
-
-			defer srcFile.Close()
 
 			dstFile, err := sftp.Create(filepath.Base(path))
 			if err != nil {
@@ -116,14 +114,7 @@ func uploadFiles(client *ssh.Client, path string) (resp string, error error) {
 			}
 			defer dstFile.Close()
 
-			buf := make([]byte, 32*1024)
-			for {
-				n, _ := srcFile.Read(buf)
-				if n == 0 {
-					break
-				}
-				dstFile.Write(buf)
-			}
+			dstFile.Write(srcFile)
 
 			c <- filepath.Base(path) + " Uploaded!!!"
 
